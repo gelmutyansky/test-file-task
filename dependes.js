@@ -1,4 +1,5 @@
 const Pool = require('pg-pool');
+const fs = require('fs');
 const constants = require('./services/constants');
 const helpers = require('./services/helpers');
 
@@ -26,7 +27,9 @@ pool.on('remove', () => {
     console.log('Client pool removed');
 });
 
-// todo: create folder public if not exists
+if (!fs.existsSync('./public')) {
+    fs.mkdirSync('./public');
+}
 
 module.exports = {
     ...constants,
