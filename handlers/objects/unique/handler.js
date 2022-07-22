@@ -123,7 +123,7 @@ async function deletingUniqueFile(object) {
                 }
             }
             else {
-                data.message = 'NO FILE';
+                data.message = 'NO FILE URL';
             }
         }
         else {
