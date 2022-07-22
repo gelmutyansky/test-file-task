@@ -1,10 +1,5 @@
-const { pool } = require('../../../dependes');
+const { pool, commonErrors } = require('../../../dependes');
 const fs = require('fs/promises');
-
-const commonErrors = {
-    default:  'ERROR',
-    noObject: 'NO OBJECT',
-};
 
 /**
  * Загрузка уникального файла

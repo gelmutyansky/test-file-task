@@ -1,5 +1,5 @@
 const Pool = require('pg-pool');
-// const fs = require('fs');
+const constants = require('./services/constants');
 
 const pool = new Pool({
     user:                    process.env.DB_USER,
@@ -28,5 +28,6 @@ pool.on('remove', () => {
 // todo: create folder public if not exists
 
 module.exports = {
+    ...constants,
     pool: pool,
 };
