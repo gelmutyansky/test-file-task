@@ -1,6 +1,11 @@
 const { pool } = require('../../../dependes');
 const fs = require('fs/promises');
 
+const commonErrors = {
+    default:  'ERROR',
+    noObject: 'NO OBJECT',
+};
+
 /**
  * Загрузка уникального файла
  * @param { array } object.file
@@ -11,7 +16,7 @@ const fs = require('fs/promises');
  * */
 async function uploadUniqueFile(object) {
     let data = {
-        message:    'ERROR',
+        message:    commonErrors.default,
         statusCode: 400,
     };
     const client = await pool.connect();
@@ -60,7 +65,76 @@ async function uploadUniqueFile(object) {
             }
         }
         else {
-            data.message = 'NO OBJECT';
+            data.message = commonErrors.noObject;
+        }
+    } catch (e) {
+        console.error(e.stack, e.message);
+        data = {
+            message:    e.message,
+            statusCode: 400,
+        };
+    } finally {
+        client.release();
+        console.log('Release client');
+    }
+
+    return data;
+}
+
+/**
+ * Функция для удаления уникального файла
+ * @param { number } object.objectId
+ * @returns Promise<{message: {success: boolean}| string, statusCode: number}> * */
+async function deletingUniqueFile(object) {
+    let data = {
+        message:    commonErrors.default,
+        statusCode: 400,
+    };
+    const client = await pool.connect();
+    const funcName = 'deletingUniqueFile';
+    const failed = `${ funcName }: failed.`;
+
+    try {
+        const querySelectObject = `SELECT "fileUrl"
+                                   FROM objects
+                                   WHERE "objectId" = $1`;
+        const resSelectObject = await client.query(querySelectObject, [ object.objectId ]);
+
+        if (resSelectObject.rows.length > 0) {
+            const { fileUrl } = resSelectObject.rows[0];
+
+            if (fileUrl) {
+                const queryUpdate = `UPDATE objects
+                                     SET "fileUrl" = NULL
+                                     WHERE "objectId" = $1`;
+                const resUpdate = await client.query(queryUpdate, [ object.objectId ]);
+
+                if (resUpdate.rowCount > 0) {
+                    data = {
+                        message:    {
+                            success: true,
+                        },
+                        statusCode: 200,
+                    };
+
+                    // Попробуем удалить файл. А если не получится, то пользователю не обязательно знать
+                    try {
+                        await fs.unlink(fileUrl);
+                    } catch (e) {
+                        console.log(`${ funcName }: file not deleted. Delete manually later!`);
+                        console.log(`error message: ${ e.message }`);
+                    }
+                }
+                else {
+                    console.log(`${ failed } Objects not updated (objectId: ${ object.objectId })`);
+                }
+            }
+            else {
+                data.message = 'NO FILE';
+            }
+        }
+        else {
+            data.message = commonErrors.noObject;
         }
     } catch (e) {
         console.error(e.stack, e.message);
@@ -77,5 +151,6 @@ async function uploadUniqueFile(object) {
 }
 
 module.exports = {
-    uploadUniqueFile: uploadUniqueFile,
+    uploadUniqueFile:   uploadUniqueFile,
+    deletingUniqueFile: deletingUniqueFile,
 };
