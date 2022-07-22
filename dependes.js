@@ -25,6 +25,8 @@ pool.on('remove', () => {
     console.log('Client pool removed');
 });
 
+// todo: create folder public if not exists
+
 module.exports = {
     pool: pool,
 };

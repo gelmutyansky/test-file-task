@@ -6,6 +6,11 @@ const AutoLoad = require('@fastify/autoload');
 module.exports = async function (fastify, opts) {
     // Place here your custom code!
 
+    fastify.register(require('fastify-multipart'), {
+        addToBody:      true,
+        sharedSchemaId: '#MultipartFileType',
+    });
+
     // Do not touch the following lines
 
     // This loads all plugins defined in plugins
