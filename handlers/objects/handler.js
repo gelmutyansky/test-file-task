@@ -23,7 +23,8 @@ async function getObject(object) {
             const querySelectFiles = `SELECT "fileId",
                                              "fileUrl"
                                       FROM files
-                                      WHERE "objectId" = $1`;
+                                      WHERE "objectId" = $1
+                                      ORDER BY "fileId"`;
             const resSelectFile = await client.query(querySelectFiles, [ object.objectId ]);
 
             data = {
