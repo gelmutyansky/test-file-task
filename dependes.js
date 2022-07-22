@@ -1,5 +1,6 @@
 const Pool = require('pg-pool');
 const constants = require('./services/constants');
+const helpers = require('./services/helpers');
 
 const pool = new Pool({
     user:                    process.env.DB_USER,
@@ -29,5 +30,6 @@ pool.on('remove', () => {
 
 module.exports = {
     ...constants,
+    ...helpers,
     pool: pool,
 };

@@ -1,4 +1,4 @@
-const { pool, commonErrors } = require('../../../dependes');
+const { pool, commonErrors, generatePath } = require('../../../dependes');
 const fs = require('fs/promises');
 
 /**
@@ -31,11 +31,9 @@ async function uploadUniqueFile(object) {
                 data.message = 'FILE NOT DELETED';
             }
             else {
-                const timestamp = +(new Date());
-
                 const { data: fileData, filename } = object.file[0];
 
-                const path = `./public/${ timestamp }${ filename.replace(/ /g, '_') }`;
+                const path = generatePath(filename);
 
                 await fs.writeFile(path, fileData);
 
