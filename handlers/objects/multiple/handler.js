@@ -71,8 +71,10 @@ async function uploadFile(object) {
 }
 
 /**
+ * Удаление множественного файла
  * @param { number } object.objectId
  * @param { number } object.fileId
+ * @returns Promise<{message: {success: boolean}| string, statusCode: number}>
  * */
 async function deleteFile(object) {
     let data = {

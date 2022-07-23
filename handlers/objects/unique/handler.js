@@ -7,7 +7,7 @@ const fs = require('fs/promises');
  * @param { Buffer } object.file[0].data
  * @param { string } object.file[0].filename
  * @param { number } object.objectId
- * @returns Promise<{message: {fileUrl: string}| string, statusCode: number}>
+ * @returns Promise<{message: {fileName: string}| string, statusCode: number}>
  * */
 async function uploadUniqueFile(object) {
     let data = {
@@ -39,13 +39,16 @@ async function uploadUniqueFile(object) {
 
                 const queryUpdate = `UPDATE objects
                                      SET "fileUrl" = $1
-                                     WHERE "objectId" = $2`;
+                                     WHERE "objectId" = $2
+                                     RETURNING REGEXP_REPLACE("fileUrl", '.+/', '') AS "fileName"`;
                 const resUpdate = await client.query(queryUpdate, [ path, object.objectId ]);
 
-                if (resUpdate.rowCount > 0) {
+                if (resUpdate.rowCount > 0 && resUpdate.rows.length > 0) {
+                    const { fileName } = resUpdate.rows[0];
+
                     data = {
                         message:    {
-                            fileUrl: path,
+                            fileName: fileName,
                         },
                         statusCode: 200,
                     };
@@ -77,7 +80,8 @@ async function uploadUniqueFile(object) {
 /**
  * Функция для удаления уникального файла
  * @param { number } object.objectId
- * @returns Promise<{message: {success: boolean}| string, statusCode: number}> * */
+ * @returns Promise<{message: {success: boolean}| string, statusCode: number}>
+ * */
 async function deletingUniqueFile(object) {
     let data = {
         message:    commonErrors.default,

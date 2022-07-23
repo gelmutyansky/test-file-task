@@ -50,5 +50,50 @@ module.exports = function (fastify, opts, next) {
         },
     });
 
+    fastify.route({
+        method: 'POST',
+        url:    '/delete',
+        schema: {
+            body:     {
+                type:       'object',
+                properties: {
+                    objectId: { type: 'integer' },
+                    fileId:   { type: 'integer' },
+                },
+                required:   [ 'objectId', 'fileId' ],
+            },
+            response: {
+                200: {
+                    type:       'object',
+                    properties: {
+                        message:    {
+                            type:       'object',
+                            properties: {
+                                success: { type: 'boolean' },
+                            },
+                        },
+                        statusCode: { type: 'integer' },
+                    },
+                },
+                400: {
+                    type:       'object',
+                    properties: {
+                        message:    { type: 'string' },
+                        statusCode: { type: 'integer' },
+                    },
+                },
+            },
+        },
+        async handler(request, reply) {
+            let data = await job.deleteFile(request.body);
+
+            if (data.statusCode !== 200) {
+                reply.status(400);
+            }
+
+            reply.send(data);
+        },
+    });
+
     next();
 };
