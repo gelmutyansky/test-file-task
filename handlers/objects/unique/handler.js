@@ -1,4 +1,4 @@
-const { pool, commonErrors, generatePath } = require('../../../dependes');
+const { pool, commonErrors, generatePath, readFile } = require('../../../dependes');
 const fs = require('fs/promises');
 
 /**
@@ -127,7 +127,57 @@ async function deletingUniqueFile(object) {
                 }
             }
             else {
-                data.message = 'NO FILE URL';
+                data.message = commonErrors.noFile;
+            }
+        }
+        else {
+            data.message = commonErrors.noObject;
+        }
+    } catch (e) {
+        console.error(e.stack, e.message);
+        data = {
+            message:    e.message,
+            statusCode: 400,
+        };
+    } finally {
+        client.release();
+        console.log('Release client');
+    }
+
+    return data;
+}
+
+async function downloadUniqueFile(object){
+    let data = {
+        message:    commonErrors.default,
+        statusCode: 400,
+    };
+    const client = await pool.connect();
+    const funcName = 'deletingUniqueFile';
+    const failed = `${ funcName }: failed.`;
+
+    try {
+        const querySelectObject = `SELECT "fileUrl"
+                                   FROM objects
+                                   WHERE "objectId" = $1`;
+        const resSelectObject = await client.query(querySelectObject, [ object.objectId ]);
+
+        if (resSelectObject.rows.length > 0) {
+            const { fileUrl } = resSelectObject.rows[0];
+
+            if (fileUrl) {
+                const { contentType, buffer } = await readFile(fileUrl);
+
+                data = {
+                    message:    {
+                        contentType: contentType,
+                        buffer:      buffer,
+                    },
+                    statusCode: 200,
+                };
+            }
+            else {
+                data.message = commonErrors.noFile;
             }
         }
         else {
@@ -150,4 +200,5 @@ async function deletingUniqueFile(object) {
 module.exports = {
     uploadUniqueFile:   uploadUniqueFile,
     deletingUniqueFile: deletingUniqueFile,
+    downloadUniqueFile: downloadUniqueFile,
 };

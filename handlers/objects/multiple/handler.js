@@ -1,4 +1,4 @@
-const { pool, commonErrors, generatePath } = require('../../../dependes');
+const { pool, commonErrors, readFile } = require('../../../dependes');
 const fs = require('fs/promises');
 
 /**
@@ -109,17 +109,12 @@ async function deleteFile(object) {
                     statusCode: 200,
                 };
 
-                if (fileUrl) {
-                    // Попробуем удалить файл. А если не получится, то пользователю не обязательно знать
-                    try {
-                        await fs.unlink(fileUrl);
-                    } catch (e) {
-                        console.log(`${ funcName }: file not deleted. Delete manually later!`);
-                        console.log(`error message: ${ e.message }`);
-                    }
-                }
-                else {
-                    // Путь до файла пустой. Странно, но ладно
+                // Попробуем удалить файл. А если не получится, то пользователю не обязательно знать
+                try {
+                    await fs.unlink(fileUrl);
+                } catch (e) {
+                    console.log(`${ funcName }: file not deleted. Delete manually later!`);
+                    console.log(`error message: ${ e.message }`);
                 }
             }
             else {
@@ -127,7 +122,7 @@ async function deleteFile(object) {
             }
         }
         else {
-            data.message = commonErrors.noObject;
+            data.message = commonErrors.noFile;
         }
     } catch (e) {
         console.error(e.stack, e.message);
@@ -143,8 +138,60 @@ async function deleteFile(object) {
     return data;
 }
 
+/**
+ * Скачивание файла
+ * @param { number } object.objectId
+ * @param { string } object.fileId
+ * @return Promise<{ message: { contentType: string, buffer: array } }>| string, statusCode: number }>
+ * */
+async function downloadFile(object) {
+    let data = {
+        message:    commonErrors.default,
+        statusCode: 400,
+    };
+    const client = await pool.connect();
+    const funcName = 'downloadFile';
+    const failed = `${ funcName }: failed.`;
+
+    try {
+        const querySelect = `SELECT "fileUrl"
+                             FROM files
+                             WHERE "objectId" = $1
+                               AND "fileId" = $2`;
+        const resSelect = await client.query(querySelect, [ object.objectId, object.fileId ]);
+
+        if (resSelect.rows.length > 0) {
+            const { fileUrl } = resSelect.rows[0];
+
+            const { contentType, buffer } = await readFile(fileUrl);
+
+            data = {
+                message:    {
+                    contentType: contentType,
+                    buffer:      buffer,
+                },
+                statusCode: 200,
+            };
+        }
+        else {
+            data.message = commonErrors.noFile;
+        }
+    } catch (e) {
+        console.error(e.stack, e.message);
+        data = {
+            message:    e.message,
+            statusCode: 400,
+        };
+    } finally {
+        client.release();
+        console.log('Release client');
+    }
+
+    return data;
+}
 
 module.exports = {
-    uploadFile: uploadFile,
-    deleteFile: deleteFile,
+    uploadFile:   uploadFile,
+    deleteFile:   deleteFile,
+    downloadFile: downloadFile,
 };
