@@ -32,13 +32,17 @@ async function uploadFile(object) {
             await fs.writeFile(path, fileData);
 
             const queryInsert = `INSERT INTO files ("objectId", "fileUrl")
-                                 VALUES ($1, $2)`;
+                                 VALUES ($1, $2)
+                                 RETURNING "fileId", REGEXP_REPLACE("fileUrl", '.+/', '') AS "fileName"`;
             const resInsert = await client.query(queryInsert, [ object.objectId, path ]);
 
-            if (resInsert.rowCount > 0) {
+            if (resInsert.rowCount > 0 && resInsert.rows.length > 0) {
+                const { fileId, fileName } = resInsert.rows[0];
+
                 data = {
                     message:    {
-                        fileUrl: path,
+                        fileId:   fileId,
+                        fileName: fileName,
                     },
                     statusCode: 200,
                 };

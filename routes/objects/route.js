@@ -25,8 +25,8 @@ module.exports = function (fastify, opts, next) {
                                     items: {
                                         type:       'object',
                                         properties: {
-                                            fileId:  { type: 'integer' },
-                                            fileUrl: { type: 'string' },
+                                            fileId:   { type: 'integer' },
+                                            fileName: { type: 'string' },
                                         },
                                     },
                                 },

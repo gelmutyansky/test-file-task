@@ -17,6 +17,19 @@ module.exports = function (fastify, opts, next) {
                 required:   [ 'objectId', 'file' ],
             },
             response: {
+                200: {
+                    type:       'object',
+                    properties: {
+                        message:    {
+                            type:       'object',
+                            properties: {
+                                fileId:   { type: 'integer' },
+                                fileName: { type: 'string' },
+                            },
+                        },
+                        statusCode: { type: 'integer' },
+                    },
+                },
                 400: {
                     type:       'object',
                     properties: {
