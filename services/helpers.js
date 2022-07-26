@@ -1,3 +1,5 @@
+const { filesFolder } = require('./constants');
+
 const path = require('path');
 const mime = require('mime-types');
 const fs = require('fs/promises');
@@ -10,7 +12,7 @@ const fs = require('fs/promises');
 function generatePath(filename) {
     const timestamp = +(new Date());
     // ./public/16154565464somename_here.jpg
-    return `./public/${ timestamp }${ filename.replace(/ /g, '_') }`;
+    return `${ filesFolder }/${ timestamp }${ filename.replace(/ /g, '_') }`;
 }
 
 async function readFile(fileUrl) {

@@ -4,6 +4,9 @@ const commonErrors = {
     noFile:   'NO FILE',
 };
 
+const filesFolder = './public/files';
+
 module.exports = {
     commonErrors: commonErrors,
+    filesFolder:  filesFolder,
 };

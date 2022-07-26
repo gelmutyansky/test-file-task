@@ -27,8 +27,8 @@ pool.on('remove', () => {
     console.log('Client pool removed');
 });
 
-if (!fs.existsSync('./public')) {
-    fs.mkdirSync('./public');
+if (!fs.existsSync('./public/files')) {
+    fs.mkdirSync('./public/files');
 }
 
 module.exports = {
