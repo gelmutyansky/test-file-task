@@ -25,38 +25,45 @@ async function uploadUniqueFile(object) {
         const resExistObject = await client.query(queryExistObject, [ object.objectId ]);
 
         if (resExistObject.rows.length > 0) {
-            const { fileUrl } = resExistObject.rows[0];
+            const { fileUrl: oldFileUrl } = resExistObject.rows[0];
 
-            if (fileUrl) {
-                data.message = 'FILE NOT DELETED';
+            const { data: fileData, filename } = object.file[0];
+
+            const path = generatePath(filename);
+
+            await fs.writeFile(path, fileData);
+
+            const queryUpdate = `UPDATE objects
+                                 SET "fileUrl" = $1
+                                 WHERE "objectId" = $2
+                                 RETURNING REGEXP_REPLACE("fileUrl", '.+/', '') AS "fileName"`;
+            const resUpdate = await client.query(queryUpdate, [ path, object.objectId ]);
+
+            if (resUpdate.rowCount > 0 && resUpdate.rows.length > 0) {
+                const { fileName } = resUpdate.rows[0];
+
+                data = {
+                    message:    {
+                        fileName: fileName,
+                    },
+                    statusCode: 200,
+                };
+
+                if (oldFileUrl) {
+                    try {
+                        await fs.unlink(oldFileUrl);
+                    } catch (e) {
+                        console.log(`${ funcName }: semi-error. Old file not deleted. Error message: ${ e.message }`);
+                    }
+                }
             }
             else {
-                const { data: fileData, filename } = object.file[0];
+                console.log(`${ failed } Object not updated. Deleting file... (objectId: ${ object.objectId }, path: ${ path })`);
 
-                const path = generatePath(filename);
-
-                await fs.writeFile(path, fileData);
-
-                const queryUpdate = `UPDATE objects
-                                     SET "fileUrl" = $1
-                                     WHERE "objectId" = $2
-                                     RETURNING REGEXP_REPLACE("fileUrl", '.+/', '') AS "fileName"`;
-                const resUpdate = await client.query(queryUpdate, [ path, object.objectId ]);
-
-                if (resUpdate.rowCount > 0 && resUpdate.rows.length > 0) {
-                    const { fileName } = resUpdate.rows[0];
-
-                    data = {
-                        message:    {
-                            fileName: fileName,
-                        },
-                        statusCode: 200,
-                    };
-                }
-                else {
-                    console.log(`${ failed } Object not updated. Deleting file... (objectId: ${ object.objectId }, path: ${ path })`);
-
+                try {
                     await fs.unlink(path);
+                } catch (e) {
+                    console.log(`${ funcName }: semi-error. New file not deleted. Error message: ${ e.message }`);
                 }
             }
         }
@@ -147,7 +154,7 @@ async function deletingUniqueFile(object) {
     return data;
 }
 
-async function downloadUniqueFile(object){
+async function downloadUniqueFile(object) {
     let data = {
         message:    commonErrors.default,
         statusCode: 400,
