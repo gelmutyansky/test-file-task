@@ -2,10 +2,56 @@ const job = require('../../handlers/objects/handler');
 
 module.exports = function (fastify, opts, next) {
     fastify.route({
-        method: 'POST',
+        method: 'GET',
         url:    '/get',
         schema: {
-            body:     {
+            response: {
+                200: {
+                    type:       'object',
+                    properties: {
+                        message:    {
+                            type:       'object',
+                            properties: {
+                                objects: {
+                                    type:  'array',
+                                    items: {
+                                        type:       'object',
+                                        properties: {
+                                            objectId:   { type: 'integer' },
+                                            objectName: { type: 'string' },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        statusCode: { type: 'integer' },
+                    },
+                },
+                400: {
+                    type:       'object',
+                    properties: {
+                        message:    { type: 'string' },
+                        statusCode: { type: 'integer' },
+                    },
+                },
+            },
+        },
+        async handler(request, reply) {
+            let data = await job.getObjects();
+
+            if (data.statusCode !== 200) {
+                reply.status(400);
+            }
+
+            reply.send(data);
+        }
+    });
+
+    fastify.route({
+        method: 'GET',
+        url:    '/get/:objectId',
+        schema: {
+            params:   {
                 type:       'object',
                 properties: {
                     objectId: { type: 'integer' },
@@ -45,7 +91,7 @@ module.exports = function (fastify, opts, next) {
             },
         },
         async handler(request, reply) {
-            let data = await job.getObject(request.body);
+            let data = await job.getObject(request.params);
 
             if (data.statusCode !== 200) {
                 reply.status(400);
