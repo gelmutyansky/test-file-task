@@ -1,4 +1,4 @@
-const { pool, commonErrors, readFile } = require('../../../dependes');
+const { pool, commonErrors, generatePath, readFile } = require('../../../dependes');
 const fs = require('fs/promises');
 
 /**

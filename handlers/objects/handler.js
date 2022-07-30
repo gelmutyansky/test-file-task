@@ -13,13 +13,14 @@ async function getObject(object) {
     let client = await pool.connect();
 
     try {
-        const querySelectObject = `SELECT REGEXP_REPLACE("fileUrl", '.+/', '') AS "fileName"
+        const querySelectObject = `SELECT REGEXP_REPLACE("fileUrl", '.+/', '') AS "fileName",
+                                          "objectName"
                                    FROM objects
                                    WHERE "objectId" = $1`;
         const resSelectObject = await client.query(querySelectObject, [ object.objectId ]);
 
         if (resSelectObject.rows.length > 0) {
-            const { fileName } = resSelectObject.rows[0];
+            const { fileName, objectName } = resSelectObject.rows[0];
 
             const querySelectFiles = `SELECT "fileId",
                                              REGEXP_REPLACE("fileUrl", '.+/', '') AS "fileName"
@@ -30,8 +31,9 @@ async function getObject(object) {
 
             data = {
                 message:    {
-                    unique:   fileName,
-                    multiple: resSelectFile.rows,
+                    unique:     fileName,
+                    objectName: objectName,
+                    multiple:   resSelectFile.rows,
                 },
                 statusCode: 200,
             };
@@ -66,7 +68,8 @@ async function getObjects() {
 
     try {
         const querySelectObjects = `SELECT "objectId", "objectName"
-                                    FROM objects`;
+                                    FROM objects
+                                    ORDER BY "objectId"`;
         const resSelectObjects = await client.query(querySelectObjects);
 
         data = {

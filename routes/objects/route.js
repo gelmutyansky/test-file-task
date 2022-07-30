@@ -44,7 +44,7 @@ module.exports = function (fastify, opts, next) {
             }
 
             reply.send(data);
-        }
+        },
     });
 
     fastify.route({
@@ -65,8 +65,9 @@ module.exports = function (fastify, opts, next) {
                         message:    {
                             type:       'object',
                             properties: {
-                                unique:   { type: 'string' },
-                                multiple: {
+                                unique:     { type: 'string' },
+                                objectName: { type: 'string' },
+                                multiple:   {
                                     type:  'array',
                                     items: {
                                         type:       'object',
