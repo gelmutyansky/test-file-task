@@ -2,6 +2,7 @@
 
 const path = require('path');
 const AutoLoad = require('@fastify/autoload');
+const cors = require('@fastify/cors');
 
 module.exports = async function (fastify, opts) {
     // Place here your custom code!
@@ -9,6 +10,10 @@ module.exports = async function (fastify, opts) {
     fastify.register(require('fastify-multipart'), {
         addToBody:      true,
         sharedSchemaId: '#MultipartFileType',
+    });
+
+    fastify.register(cors, {
+        origin: '*',
     });
 
     // Do not touch the following lines
