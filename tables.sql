@@ -8,6 +8,7 @@ create table objects
     "objectName" text
 );
 
+-- -- поменяйте gelmutr на того, кто будет DB_USER, и раскомментируйте
 -- alter table objects
 --     owner to gelmutr;
 
@@ -27,6 +28,7 @@ create table files
     "fileUrl"  text    not null
 );
 
+-- -- поменяйте gelmutr на того, кто будет DB_USER, и раскомментируйте
 -- alter table files
 --     owner to gelmutr;
 
