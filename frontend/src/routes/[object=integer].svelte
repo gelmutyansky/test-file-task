@@ -67,7 +67,7 @@
             unique = message.fileName;
         }
         else {
-            // failed
+            console.log(JSON.stringify(message));
         }
     }
 
@@ -94,7 +94,7 @@
             multiple = multiple;
         }
         else {
-            // failed
+            console.log(JSON.stringify(message));
         }
     }
 
@@ -112,7 +112,7 @@
             unique = '';
         }
         else {
-            // failed
+            console.log(JSON.stringify(message));
         }
     }
 
@@ -132,7 +132,7 @@
             multiple = multiple.filter(x => x.fileId !== fileId);
         }
         else {
-            // failed
+            console.log(JSON.stringify(message));
         }
     }
 
